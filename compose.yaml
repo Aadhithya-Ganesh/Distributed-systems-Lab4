@@ -1,0 +1,59 @@
+services:
+  item-service:
+    container_name: item_service
+    build: ./item_service/.
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./item_service:/app
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/itemdb"
+    networks:
+      - backend
+    depends_on:
+      - database
+
+  booking-service:
+    container_name: booking_service
+    build: ./booking_service/.
+    ports:
+      - "8081:8081"
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/bookingdb"
+    volumes:
+      - ./booking_service:/app
+    networks:
+      - backend
+    depends_on:
+      - database
+
+  database:
+    image: postgres:18-alpine
+    container_name: db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - backend
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./create-db.sql:/docker-entrypoint-initdb.d/01_create_dbs.sql:ro
+    restart: unless-stopped
+
+  frontend:
+    build: ./booking-items
+    env_file:
+      - ./booking-items/.env
+    ports:
+      - "80:80"
+    networks:
+      - backend
+    depends_on:
+      - item-service
+      - booking-service
+
+networks:
+  backend:
+
+volumes:
+  postgres-data:

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: item-service
+spec:
+  selector:
+    matchLabels:
+      app: item-service
+  template:
+    metadata:
+      labels:
+        app: item-service
+    spec:
+      containers:
+        - name: item-service
+          image: aadhithya123/distributed-systems-items-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              value: postgresql://postgres:postgres@database:5432/itemdb
+
+
+# kubectl apply -f .\booking-service-deployments.yaml -f .\booking-service-services.yaml -f .\database-deployments.yaml -f .\database-service.yaml -f .\frontend-deployments.yaml -f .\frontend-services.yaml -f .\item-service-deployments.yaml -f .\item-service-services.yaml

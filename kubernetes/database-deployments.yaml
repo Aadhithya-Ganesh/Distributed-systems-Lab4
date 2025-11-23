@@ -1,0 +1,48 @@
+# ConfigMap: create-db.sql
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: create-db-sql
+data:
+  create-db.sql: |
+    CREATE DATABASE itemdb;
+    CREATE DATABASE bookingdb;
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database
+spec:
+  selector:
+    matchLabels:
+      app: database
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      containers:
+        - name: database
+          image: postgres:18
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"
+          volumeMounts:
+            - name: db-storage
+              mountPath: /var/lib/postgresql
+            - name: initdb
+              mountPath: /docker-entrypoint-initdb.d/
+      volumes:
+        - name: db-storage
+          hostPath:
+            path: /data/postgres # make sure /data/postgres exists on your machine
+            type: DirectoryOrCreate
+        - name: initdb
+          configMap:
+            name: create-db-sql

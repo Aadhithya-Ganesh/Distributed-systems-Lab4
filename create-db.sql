@@ -1,0 +1,2 @@
+CREATE DATABASE itemdb;
+CREATE DATABASE bookingdb;
